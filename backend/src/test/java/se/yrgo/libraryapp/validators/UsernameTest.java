@@ -28,4 +28,35 @@ public class UsernameTest {
     }
 
 
+    @ParameterizedTest
+    @ValueSource(strings={
+            "name with space",
+            "ääää",
+            "£¤'name"
+    })
+    void testInCorrectNaWithOtherCharacters(String username) {
+        assertThat(Username.validate(username)).isFalse();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings= {
+            "a", "ab", "abc"
+    })
+    void TestIncorrectLengthName(String username) {
+        assertThat(Username.validate(username)).isFalse();
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    void TestIncorrectEmptyName(String username) {
+        assertThat(Username.validate(username)).isFalse();
+    }
+
+    @Test
+    void testUsernameLongerThan100000333Characters() {
+        String username = "a".repeat(100000333);
+
+        assertThat(Username.validate(username)).isTrue();
+    }
+
 }
