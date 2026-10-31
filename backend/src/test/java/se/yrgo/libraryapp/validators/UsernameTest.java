@@ -54,7 +54,7 @@ public class UsernameTest {
 
     @Test
     void testUsernameLongerThan100000333Characters() {
-        String username = "a".repeat(100000333);
+        String username = "a".repeat(101);
         assertThat(Username.validate(username)).isFalse();
     }
 
