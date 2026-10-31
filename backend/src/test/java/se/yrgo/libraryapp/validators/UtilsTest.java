@@ -1,10 +1,13 @@
 package se.yrgo.libraryapp.validators;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 public class UtilsTest {
     @ParameterizedTest
@@ -28,8 +31,14 @@ public class UtilsTest {
     }
 
     @ParameterizedTest
-    @NullAndEmptySource
+    @EmptySource
     void testOnlyLettersAndWhitespaceEmpty(String str) {
         assertThat(Utils.onlyLettersAndWhitespace(str)).isEqualTo("");
+    }
+
+    @Test
+    void testNullInput() {
+        assertThatNullPointerException()
+                .isThrownBy(() -> Utils.onlyLettersAndWhitespace(null));
     }
 }
