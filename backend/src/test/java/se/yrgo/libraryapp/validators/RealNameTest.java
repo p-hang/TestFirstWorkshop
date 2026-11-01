@@ -32,4 +32,9 @@ public class RealNameTest {
     void testBadWordsAreLoaded(String badWord) {
         assertThat(RealName.validate("John " + badWord)).isFalse();
     }
+
+    @Test
+    void testBadWordAtBeginningOfName() {
+        assertThat(RealName.validate("damn John")).isFalse();
+    }
 }
