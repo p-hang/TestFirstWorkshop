@@ -2,6 +2,7 @@ package se.yrgo.libraryapp.validators;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,5 +37,15 @@ public class RealNameTest {
     @Test
     void testBadWordAtBeginningOfName() {
         assertThat(RealName.validate("damn John")).isFalse();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'John damn', false",
+            "'John Smith', true",
+            "'Anna blimey', false"
+    })
+    void testRealNameValidation(String name, boolean expected) {
+        assertThat(RealName.validate(name)).isEqualTo(expected);
     }
 }

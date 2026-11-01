@@ -22,12 +22,22 @@ public class UtilsTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "a b c@123",
+            "a b c@123" ,
             "A B C",
             "a b c"
     })
     void testOnlyLettersAndWhitespace(String str) {
         assertThat(Utils.onlyLettersAndWhitespace(str)).isEqualTo("a b c");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "12345",
+            "@#$%",
+            "123@#$%"
+    })
+    void testStringWithoutLetters(String str) {
+        assertThat(Utils.onlyLettersAndWhitespace(str)).isEmpty();
     }
 
     @ParameterizedTest
