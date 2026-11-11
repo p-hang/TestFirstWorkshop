@@ -14,7 +14,8 @@ import se.yrgo.libraryapp.entities.forms.*;
 import se.yrgo.libraryapp.services.*;
 
 @Path("/login")
-public class LoginController {
+public class
+LoginController {
 
     private UserService userService;
     private RoleDao roleDao;
