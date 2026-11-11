@@ -24,6 +24,9 @@ public class UserDao {
     }
 
     public Optional<User> get(String id) {
+        if (id == null || !id.matches("[1-9]\\d*")) {
+            return Optional.empty();
+        }
         try (Connection conn = ds.getConnection();
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt
