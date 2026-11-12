@@ -27,6 +27,8 @@ public class UserDaoTest {
     private Statement stmt;
     @Mock
     private ResultSet rs;
+    @Mock
+    private PreparedStatement ps;
 
     @Test
     void getExistingLoginInfo() throws SQLException {
@@ -122,5 +124,39 @@ public class UserDaoTest {
 
         assertThat(user.getName()).isEqualTo(username);
         assertThat(user.getRealname()).isEqualTo(realname);
+    }
+
+    @Test
+    void isNameAvailableShouldReturnTrueWhenNameDoesNotExist() throws SQLException {
+        String name = "testuser";
+
+        when(ds.getConnection()).thenReturn(conn);
+        when(conn.prepareStatement(anyString())).thenReturn(ps);
+        when(ps.executeQuery()).thenReturn(rs);
+        when(rs.next()).thenReturn(false);
+
+        UserDao userDao = new UserDao(ds);
+
+        assertThat(userDao.isNameAvailable(name)).isTrue();
+
+        verify(ps).setString(1, name);
+        verify(ps).executeQuery();
+    }
+
+    @Test
+    void isNameAvailableShouldReturnFalseWhenNameAlreadyExists() throws SQLException {
+        String name = "testuser";
+
+        when(ds.getConnection()).thenReturn(conn);
+        when(conn.prepareStatement(anyString())).thenReturn(ps);
+        when(ps.executeQuery()).thenReturn(rs);
+        when(rs.next()).thenReturn(true);
+
+        UserDao userDao = new UserDao(ds);
+
+        assertThat(userDao.isNameAvailable(name)).isFalse();
+
+        verify(ps).setString(1, name);
+        verify(ps).executeQuery();
     }
 }

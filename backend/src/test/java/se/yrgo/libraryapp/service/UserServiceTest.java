@@ -14,8 +14,7 @@ import se.yrgo.libraryapp.services.UserService;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 public class UserServiceTest {
@@ -28,21 +27,58 @@ public class UserServiceTest {
     private UserService userService;
 
     @Test
-    @SuppressWarnings("deprecation")
     void correctLogin() {
-        final String userId = "1";
-        final UserId id = UserId.of(userId);
         final String username = "testuser";
         final String password = "password";
-        final String passwordHash = "$argon2i$v=19$m=16,t=2,p=1$QldXU09Sc2dzOWdUalBKQw$LgKb6x4usOpDLTlXCBVhxA";
+        final String passwordHash = "hashedPassword";
 
+        final UserId id = UserId.of(1);
         final LoginInfo info = new LoginInfo(id, passwordHash);
-        final PasswordEncoder encoder =
-                org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
-        when(userDao.getLoginInfo(username)).thenReturn(Optional.of(info));
-        UserService userService = new UserService(userDao, encoder);
-        assertThat(userService.validate(username,
-                password)).isEqualTo(Optional.of(id));
+
+        when(userDao.getLoginInfo(username))
+                .thenReturn(Optional.of(info));
+
+        when(encoder.matches(password, passwordHash))
+                .thenReturn(true);
+
+        assertThat(userService.validate(username, password))
+                .isEqualTo(Optional.of(id));
+
+        verify(userDao).getLoginInfo(username);
+        verify(encoder).matches(password, passwordHash);
+    }
+
+    @Test
+    void validateShouldReturnEmptyWhenUserDoesNotExist() {
+        String username = "unknown";
+        String password = "password";
+
+        when(userDao.getLoginInfo(username))
+                .thenReturn(Optional.empty());
+
+        assertThat(userService.validate(username, password)).isEmpty();
+
+        verify(userDao).getLoginInfo(username);
+        verifyNoInteractions(encoder);
+    }
+
+    @Test
+    void validateShouldReturnEmptyWhenPasswordIsIncorrect() {
+        String username = "testuser";
+        String password = "wrongPassword";
+        String passwordHash = "hashedPassword";
+
+        LoginInfo info = new LoginInfo(UserId.of(1), passwordHash);
+
+        when(userDao.getLoginInfo(username))
+                .thenReturn(Optional.of(info));
+
+        when(encoder.matches(password, passwordHash))
+                .thenReturn(false);
+
+        assertThat(userService.validate(username, password)).isEmpty();
+
+        verify(encoder).matches(password, passwordHash);
     }
 
     @Test
@@ -66,5 +102,62 @@ public class UserServiceTest {
         verify(encoder).encode(password);
 
         verify(userDao).register(name, realname, passwordHash);
+    }
+
+    @Test
+    void registerShouldReturnFalseWhenDaoRegistrationFails() {
+        String name = "testuser";
+        String realname = "Test User";
+        String password = "password";
+        String passwordHash = "hashedPassword";
+
+        when(encoder.encode(password))
+                .thenReturn(passwordHash);
+
+        when(userDao.register(name, realname, passwordHash))
+                .thenReturn(false);
+
+        boolean result = userService.register(name, realname, password);
+
+        assertThat(result).isFalse();
+
+        verify(encoder).encode(password);
+        verify(userDao).register(name, realname, passwordHash);
+    }
+
+    @Test
+    void isNameAvailableShouldReturnFalseWhenNameIsNull() {
+        assertThat(userService.isNameAvailable(null)).isFalse();
+
+        verifyNoInteractions(userDao);
+    }
+
+    @Test
+    void isNameAvailableShouldReturnFalseWhenNameIsTooShort() {
+        assertThat(userService.isNameAvailable("ab")).isFalse();
+
+        verifyNoInteractions(userDao);
+    }
+
+    @Test
+    void isNameAvailableShouldReturnTrueWhenNameIsAvailable() {
+        String name = "testuser";
+
+        when(userDao.isNameAvailable(name)).thenReturn(true);
+
+        assertThat(userService.isNameAvailable(name)).isTrue();
+
+        verify(userDao).isNameAvailable(name);
+    }
+
+    @Test
+    void isNameAvailableShouldReturnFalseWhenNameAlreadyExists() {
+        String name = "testuser";
+
+        when(userDao.isNameAvailable(name)).thenReturn(false);
+
+        assertThat(userService.isNameAvailable(name)).isFalse();
+
+        verify(userDao).isNameAvailable(name);
     }
 }
