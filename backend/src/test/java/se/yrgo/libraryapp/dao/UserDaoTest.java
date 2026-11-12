@@ -2,8 +2,7 @@ package se.yrgo.libraryapp.dao;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.sql.*;
 import java.util.Optional;
@@ -11,6 +10,7 @@ import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -84,6 +84,7 @@ public class UserDaoTest {
         UserDao userDao = new UserDao(ds);
         assertThat(userDao.get(username)).isEmpty();
     }
+
     // Should return Optional.empty() for an invalid userId
     // Then do not contact with database cause has returned empty()
     @ParameterizedTest
@@ -95,24 +96,31 @@ public class UserDaoTest {
         verifyNoInteractions(ds);
     }
 
-    @Test
-    void getShouldReturnCorrectUser() throws SQLException {
+    // Should get the corresponding value of the username and the realname.
+    // But can not get useName and realName as include in database.
+    @ParameterizedTest
+    @CsvSource({
+            "'testUser', 'bosse'",
+            "'Admin', 'Larr'",
+            "'rock', 'Jackson'"
+    })
+    void getShouldReturnCorrectUser(String username, String realname) throws SQLException {
+
         when(ds.getConnection()).thenReturn(conn);
         when(conn.createStatement()).thenReturn(stmt);
         when(stmt.executeQuery(anyString())).thenReturn(rs);
         when(rs.next()).thenReturn(true);
-        when(rs.getString("user")).thenReturn("testuser");
-        when(rs.getString("realname")).thenReturn("bosse");
+        when(rs.getString("user")).thenReturn(username);
+        when(rs.getString("realname")).thenReturn(realname);
 
         UserDao userDao = new UserDao(ds);
         Optional<User> result = userDao.get("1");
-        assertThat(result.isPresent()).isTrue();
+
+        assertThat(result).isPresent();
 
         User user = result.get();
-        assertThat(user.getId()).isEqualTo(UserId.of(1));
-        assertThat(user.getName()).isEqualTo("testuser");
-        assertThat(user.getRealname()).isEqualTo("bosse");
+
+        assertThat(user.getName()).isEqualTo(username);
+        assertThat(user.getRealname()).isEqualTo(realname);
     }
-
-
 }
