@@ -42,7 +42,7 @@ public class UsernameTest {
 
     @Test
     void TestCorrectUsername() {
-        assertTrue(Username.validate("bosse-"));
+        assertTrue(Username.validate("bo_@s.se-"));
     }
     @ParameterizedTest
     @EmptySource
