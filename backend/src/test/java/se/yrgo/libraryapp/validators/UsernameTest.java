@@ -18,15 +18,9 @@ public class UsernameTest {
     @Test
     void incorrectUsername() {
         assertFalse(Username.validate("name with space"));
-        assertFalse(Username.validate("ååååå"));
+        assertFalse(Username.validate("åååååöä"));
         assertFalse(Username.validate("¤%a"));
     }
-
-    @Test
-    void incorrectNullName() {
-        assertFalse(Username.validate(""));
-    }
-
 
     @ParameterizedTest
     @ValueSource(strings={
@@ -34,7 +28,7 @@ public class UsernameTest {
             "ääää",
             "£¤'name"
     })
-    void testInCorrectNaWithOtherCharacters(String username) {
+    void testInCorrectNameWithOtherCharacters(String username) {
         assertThat(Username.validate(username)).isFalse();
     }
 
@@ -46,10 +40,19 @@ public class UsernameTest {
         assertThat(Username.validate(username)).isFalse();
     }
 
+    @Test
+    void TestCorrectUsername() {
+        assertTrue(Username.validate("bosse-"));
+    }
     @ParameterizedTest
     @EmptySource
     void TestIncorrectEmptyName(String username) {
         assertThat(Username.validate(username)).isFalse();
+    }
+
+    @Test
+    void incorrectNullName() {
+        assertFalse(Username.validate(""));
     }
 
     @Test
